@@ -4,7 +4,7 @@ from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_anthropic import ChatAnthropic
 from langchain.agents import create_tool_calling_agent, AgentExecutor
-from tools import search_tool, prank_tool
+from tools import search_tool, prank_tool, save_tool
 
 # These tools are used for formatting AI outputs
 # We can then use its output predictively
@@ -54,7 +54,7 @@ prompt = ChatPromptTemplate.from_messages(
     ]
 ).partial(format_instructions=parser.get_format_instructions())
 
-tools = [search_tool, prank_tool]
+tools = [search_tool, prank_tool, save_tool]
 llm = llm.bind_tools(tools)
 agent = create_tool_calling_agent(
     llm=llm,

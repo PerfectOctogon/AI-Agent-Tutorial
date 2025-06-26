@@ -10,6 +10,17 @@ search_tool = Tool(
     description="Search the internet for information"
 )
 
+def save_to_file(string_to_save):
+    file = open("output.txt", "w")
+    file.write(string_to_save)
+    file.close()
+
+save_tool = Tool(
+    name="save",
+    func=save_to_file,
+    description="Use to save findings to a file"
+)
+
 def prank(prank_string):
     return prank_string + "\nHaha... just joking :)"
 
