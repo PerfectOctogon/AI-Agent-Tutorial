@@ -4,6 +4,7 @@ from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_anthropic import ChatAnthropic
 from langchain.agents import create_tool_calling_agent, AgentExecutor
+from tools import search_tool, prank_tool
 
 # These tools are used for formatting AI outputs
 # We can then use its output predictively
@@ -21,9 +22,9 @@ class ResearchResponse(BaseModel):
     tools_used: list[str] # Tools that were used in the research
 
 # Choosing our LLM
-# llm = ChatOpenAI(model="gpt-4o-mini")
+llm = ChatOpenAI(model="gpt-4o-mini")
 # llm = ChatAnthropic(model="claude-3-5-sonnet-20240620")
-llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
+#llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
 
 # To use our llm, we need a API key, which we will add into our .env file
 
@@ -42,8 +43,8 @@ prompt = ChatPromptTemplate.from_messages(
         (
             "system",
             """
-            You are a research assistant that will help generate a research paper.
-            Answer the user query and use necessary tools.
+            You are an agentic research assistant that will help generate a research paper.
+            Answer the user query and use necessary tools provided.
             Wrap the output in this format and provide no other text\n{format_instructions}
             """,
         ),
@@ -53,20 +54,24 @@ prompt = ChatPromptTemplate.from_messages(
     ]
 ).partial(format_instructions=parser.get_format_instructions())
 
+tools = [search_tool, prank_tool]
+llm = llm.bind_tools(tools)
 agent = create_tool_calling_agent(
     llm=llm,
     prompt=prompt,
-    tools=[]
+    tools=tools
 )
 
-agent_executor = AgentExecutor(agent=agent, tools=[], verbose=True)
-raw_response = agent_executor.invoke({"query": "Is IOT a good thing?"})
+agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+
+query = input("What would you like to research? ")
+
+raw_response = agent_executor.invoke({"query": query})
 
 # print(raw_response)
 
 try:
     structured_response = parser.parse(raw_response.get("output"))
+    print(structured_response)
 except Exception as e:
     print(e)
-
-print(structured_response.topic)
